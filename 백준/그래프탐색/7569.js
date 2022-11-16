@@ -1,3 +1,4 @@
+// https://www.acmicpc.net/problem/7569
 class Queue {
   constructor() {
     this.dat = [];
