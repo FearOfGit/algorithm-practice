@@ -1,5 +1,6 @@
 // https://www.acmicpc.net/problem/2636
 
+// 치즈의 개수를 파악1
 class Queue {
   constructor() {
     this.dat = [];
