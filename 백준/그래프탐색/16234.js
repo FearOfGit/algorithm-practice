@@ -1,5 +1,3 @@
-// https://www.acmicpc.net/problem/16234
-
 class Queue {
   constructor() {
     this.dat = [];
@@ -34,73 +32,75 @@ const input = require('fs')
   .toString()
   .trim()
   .split('\n');
-
 const [N, L, R] = input[0].split(' ').map(Number);
-const map = Array.from({ length: N }, () => Array(N));
+const land = Array.from({ length: N }, () => Array(N).fill(null));
 for (let i = 1; i <= N; i++) {
-  const arr = input[i].split(' ').map(Number);
+  const temp = input[i].split(' ').map(Number);
   for (let j = 0; j < N; j++) {
-    map[i - 1][j] = arr[j];
+    land[i - 1][j] = temp[j];
   }
 }
-// console.log(N, L, R, map);
 const dir = [
   [-1, 0],
   [1, 0],
   [0, -1],
   [0, 1],
 ];
-let answer = 0;
-let visited;
-while (true) {
-  let flag = false;
-  visited = Array.from({ length: N }, () => Array(N).fill(false));
+
+function checkSharing() {
+  const visited = Array.from({ length: N }, () => Array(N).fill(false));
+  let isMove = false;
 
   for (let i = 0; i < N; i++) {
     for (let j = 0; j < N; j++) {
-      if (visited[i][j]) continue;
-      if (bfs(i, j)) flag = true;
+      if (!visited[i][j]) {
+        let peopleCnt = 0;
+        const queue = new Queue();
+        queue.push([i, j]);
+        visited[i][j] = true;
+        const nodes = [];
+
+        while (!queue.isEmpty()) {
+          const [x, y] = queue.front();
+          queue.pop();
+          peopleCnt += land[x][y];
+          nodes.push([x, y]);
+
+          for (let k = 0; k < 4; k++) {
+            const nx = x + dir[k][0];
+            const ny = y + dir[k][1];
+
+            if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
+            if (visited[nx][ny]) continue;
+
+            const diff = Math.abs(land[x][y] - land[nx][ny]);
+            if (diff >= L && diff <= R) {
+              visited[nx][ny] = true;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+
+        if (nodes.length >= 2) {
+          const newPeopleCnt = Math.floor(peopleCnt / nodes.length);
+          for (const [x, y] of nodes) {
+            land[x][y] = newPeopleCnt;
+          }
+          isMove = true;
+        }
+      }
     }
   }
+  return isMove;
+}
 
-  if (!flag) break;
-  answer++;
+let answer = 0;
+while (true) {
+  if (checkSharing()) {
+    answer += 1;
+  } else {
+    break;
+  }
 }
 
 console.log(answer);
-
-function bfs(i, j) {
-  const queue = new Queue();
-  const trace = [];
-  let sum = 0;
-  queue.push([i, j]);
-  visited[i][j] = true;
-
-  while (!queue.isEmpty()) {
-    const [x, y] = queue.front();
-    queue.pop();
-    trace.push([x, y]);
-    sum += map[x][y];
-
-    for (let k = 0; k < 4; k++) {
-      const nx = x + dir[k][0];
-      const ny = y + dir[k][1];
-
-      if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
-      const diff = Math.abs(map[x][y] - map[nx][ny]);
-      if (L > diff || R < diff) continue;
-      if (visited[nx][ny]) continue;
-
-      visited[nx][ny] = true;
-      queue.push([nx, ny]);
-    }
-  }
-
-  if (trace.length === 1) return false;
-
-  for (const [x, y] of trace) {
-    map[x][y] = Math.floor(sum / trace.length);
-  }
-
-  return true;
-}
