@@ -32,12 +32,13 @@ const input = require('fs')
   .toString()
   .trim()
   .split('\n');
-const [N, L, R] = input[0].split(' ').map(Number);
-const land = Array.from({ length: N }, () => Array(N).fill(null));
+
+const [N, M, T] = input[0].split(' ').map(Number);
+const map = Array.from({ length: N }, () => Array(M).fill(null));
 for (let i = 1; i <= N; i++) {
   const temp = input[i].split(' ').map(Number);
-  for (let j = 0; j < N; j++) {
-    land[i - 1][j] = temp[j];
+  for (let j = 0; j < M; j++) {
+    map[i - 1][j] = temp[j];
   }
 }
 const dir = [
@@ -47,60 +48,36 @@ const dir = [
   [0, 1],
 ];
 
-function checkSharing() {
-  const visited = Array.from({ length: N }, () => Array(N).fill(false));
-  let isMove = false;
+function bfs() {
+  const queue = new Queue();
+  queue.push([0, 0, 0, false]);
+  const visited = Array.from({ length: N }, () =>
+    Array.from({ length: M }, () => Array(2).fill(false))
+  );
+  visited[0][0][0] = true;
 
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < N; j++) {
-      if (!visited[i][j]) {
-        let peopleCnt = 0;
-        const queue = new Queue();
-        queue.push([i, j]);
-        visited[i][j] = true;
-        const nodes = [];
+  while (!queue.isEmpty()) {
+    const [x, y, cnt, gram] = queue.front();
+    queue.pop();
 
-        while (!queue.isEmpty()) {
-          const [x, y] = queue.front();
-          queue.pop();
-          peopleCnt += land[x][y];
-          nodes.push([x, y]);
+    if (cnt > T) break;
+    if (x === N - 1 && y === M - 1) return cnt;
 
-          for (let k = 0; k < 4; k++) {
-            const nx = x + dir[k][0];
-            const ny = y + dir[k][1];
+    for (let k = 0; k < 4; k++) {
+      const nx = x + dir[k][0];
+      const ny = y + dir[k][1];
 
-            if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
-            if (visited[nx][ny]) continue;
+      if (nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
+      if (visited[nx][ny][gram ? 1 : 0]) continue;
+      if (!gram && map[nx][ny] === 1) continue;
 
-            const diff = Math.abs(land[x][y] - land[nx][ny]);
-            if (diff >= L && diff <= R) {
-              visited[nx][ny] = true;
-              queue.push([nx, ny]);
-            }
-          }
-        }
-
-        if (nodes.length >= 2) {
-          const newPeopleCnt = Math.floor(peopleCnt / nodes.length);
-          for (const [x, y] of nodes) {
-            land[x][y] = newPeopleCnt;
-          }
-          isMove = true;
-        }
-      }
+      const isGram = gram || map[nx][ny] === 2;
+      queue.push([nx, ny, cnt + 1, isGram]);
+      visited[nx][ny][gram ? 1 : 0] = true;
     }
   }
-  return isMove;
+
+  return 'Fail';
 }
 
-let answer = 0;
-while (true) {
-  if (checkSharing()) {
-    answer += 1;
-  } else {
-    break;
-  }
-}
-
-console.log(answer);
+console.log(bfs());

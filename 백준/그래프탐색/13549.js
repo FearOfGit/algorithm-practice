@@ -1,5 +1,3 @@
-// https://www.acmicpc.net/problem/13549
-
 const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
 const input = require('fs')
   .readFileSync(filePath)
@@ -8,26 +6,33 @@ const input = require('fs')
   .split('\n');
 
 const [N, K] = input[0].split(' ').map(Number);
+const MAX_SIZE = 100000 + 1;
 
-const visited = Array(100001).fill(false);
-const queue = [];
-queue.push([N, 0]);
+function bfs() {
+  const queue = [N];
+  const visited = [];
+  visited[N] = 1;
 
-while (queue.length) {
-  const [x, time] = queue.shift();
-  visited[x] = true;
+  while (queue.length) {
+    const currentPos = queue.shift();
 
-  if (x === K) {
-    return console.log(time);
-  }
+    if (currentPos === K) return visited[K] - 1;
 
-  if (x * 2 <= 100000 && !visited[x * 2]) {
-    queue.unshift([x * 2, time]);
-  }
-  if (x < K && x < 100000 && !visited[x + 1]) {
-    queue.push([x + 1, time + 1]);
-  }
-  if (x > 0 && !visited[x - 1]) {
-    queue.push([x - 1, time + 1]);
+    if (currentPos * 2 < MAX_SIZE && !visited[currentPos * 2]) {
+      queue.unshift(currentPos * 2);
+      visited[currentPos * 2] = visited[currentPos];
+    }
+
+    if (currentPos + 1 < MAX_SIZE && !visited[currentPos + 1]) {
+      queue.push(currentPos + 1);
+      visited[currentPos + 1] = visited[currentPos] + 1;
+    }
+
+    if (currentPos - 1 >= 0 && !visited[currentPos - 1]) {
+      queue.push(currentPos - 1);
+      visited[currentPos - 1] = visited[currentPos] + 1;
+    }
   }
 }
+
+console.log(bfs());
