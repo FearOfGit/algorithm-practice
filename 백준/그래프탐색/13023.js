@@ -1,6 +1,3 @@
-// https://www.acmicpc.net/problem/13023
-
-// isLine 전역변수
 const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
 const input = require('fs')
   .readFileSync(filePath)
@@ -9,43 +6,40 @@ const input = require('fs')
   .split('\n');
 
 const [N, M] = input[0].split(' ').map(Number);
-const graph = Array(N)
-  .fill(0)
-  .map(() => []); // *
+const graph = [];
+for (let i = 0; i < N; i++) graph[i] = [];
 for (let i = 1; i <= M; i++) {
   const [a, b] = input[i].split(' ').map(Number);
   graph[a].push(b);
   graph[b].push(a);
 }
+let flag = false;
+let visited = [];
 
-let isLine = false;
-let visited;
-
-for (let i = 0; i < N; i++) {
-  visited = Array(N).fill(false);
-  dfs(i, 1);
-  if (isLine) {
-    break;
-  }
-}
-
-console.log(isLine ? 1 : 0);
-
-function dfs(start, cnt) {
-  if (cnt === 5) {
-    isLine = true;
+function dfs(cur, cnt) {
+  if (cnt >= 5) {
+    flag = true;
     return;
   }
 
-  visited[start] = true;
-  for (const x of graph[start]) {
-    if (visited[x]) continue;
-    dfs(x, cnt + 1);
+  for (const next of graph[cur]) {
+    if (visited[next]) continue;
 
-    if (isLine) {
-      return;
-    }
+    visited[next] = true;
+    dfs(next, cnt + 1);
+    visited[next] = false;
+
+    if (flag) break;
   }
-  // isLine이 false이면 아직 5개의 연결선을 찾지 못함, 현재 노드가 다른 곳에서도 쓰일 수 있다.
-  visited[start] = false; // *
 }
+
+for (let i = 0; i < N; i++) {
+  visited = Array(N).fill(false);
+
+  visited[i] = true;
+  dfs(i, 1);
+
+  if (flag) break;
+}
+
+console.log(flag ? 1 : 0);
