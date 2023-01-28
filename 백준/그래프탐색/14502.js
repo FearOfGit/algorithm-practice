@@ -1,7 +1,3 @@
-// https://www.acmicpc.net/problem/14502
-
-// 배열 사본 만들기
-// bfs 깔끔하게
 class Queue {
   constructor() {
     this.dat = [];
@@ -38,11 +34,11 @@ const input = require('fs')
   .split('\n');
 
 const [N, M] = input[0].split(' ').map(Number);
-const map = Array.from({ length: N }, () => Array(M));
+const map = Array.from({ length: N }, () => Array(M).fill(null));
 for (let i = 1; i <= N; i++) {
-  const arr = input[i].split(' ').map(Number);
+  const temp = input[i].split(' ').map(Number);
   for (let j = 0; j < M; j++) {
-    map[i - 1][j] = arr[j];
+    map[i - 1][j] = temp[j];
   }
 }
 const dir = [
@@ -53,41 +49,14 @@ const dir = [
 ];
 let answer = 0;
 
-dfs(0);
-console.log(answer);
-
-function dfs(cnt) {
-  if (cnt === 3) {
-    bfs();
-    return;
-  }
-
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < M; j++) {
-      if (map[i][j] === 0) {
-        map[i][j] = 1;
-        dfs(cnt + 1);
-        map[i][j] = 0;
-      }
-    }
-  }
-}
-
 function bfs() {
+  const copy = Array.from({ length: N }, () => Array(M).fill(null));
   const queue = new Queue();
 
-  const temp = Array.from({ length: N }, () => Array(M)); // *
   for (let i = 0; i < N; i++) {
     for (let j = 0; j < M; j++) {
-      temp[i][j] = map[i][j];
-    }
-  }
-
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < M; j++) {
-      if (temp[i][j] === 2) {
-        queue.push([i, j]);
-      }
+      copy[i][j] = map[i][j];
+      if (copy[i][j] === 2) queue.push([i, j]);
     }
   }
 
@@ -100,14 +69,32 @@ function bfs() {
       const ny = y + dir[k][1];
 
       if (nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
-      if (temp[nx][ny] === 0) {
-        temp[nx][ny] = 2;
-        queue.push([nx, ny]);
-      }
+      if (copy[nx][ny] !== 0) continue;
+
+      copy[nx][ny] = 2;
+      queue.push([nx, ny]);
     }
   }
 
-  const cand = [].concat(...temp).filter((el) => el === 0).length;
-
-  answer = Math.max(answer, cand);
+  answer = Math.max(answer, [].concat(...copy).filter((el) => el === 0).length);
 }
+
+function dfs(cnt) {
+  if (cnt === 3) {
+    bfs();
+    return;
+  }
+
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      if (map[i][j] !== 0) continue;
+
+      map[i][j] = 1;
+      dfs(cnt + 1);
+      map[i][j] = 0;
+    }
+  }
+}
+
+dfs(0);
+console.log(answer);

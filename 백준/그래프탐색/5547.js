@@ -33,14 +33,15 @@ const input = require('fs')
   .trim()
   .split('\n');
 
-const [W, H] = input[0].split(' ').map((el) => +el);
-const house = Array.from({ length: H }, () => Array(W).fill(null));
+const [W, H] = input[0].split(' ').map(Number);
+const map = Array.from({ length: H }, () => Array(W).fill(null));
 for (let i = 1; i <= H; i++) {
-  const temp = input[i].split(' ').map((el) => +el);
+  const temp = input[i].split(' ').map(Number);
   for (let j = 0; j < W; j++) {
-    house[i - 1][j] = temp[j];
+    map[i - 1][j] = temp[j];
   }
 }
+
 const dir = {
   even: [
     [-1, -1],
@@ -60,88 +61,92 @@ const dir = {
   ],
 };
 
-function markOutdoors() {
+function makeOutdoor() {
   const visited = Array.from({ length: H }, () => Array(W).fill(false));
-
   for (let i = 0; i < H; i++) {
     for (let j = 0; j < W; j++) {
-      if (house[i][j] === 0 && !visited[i][j]) {
-        const queue = new Queue();
-        queue.push([i, j]);
-        visited[i][j] = true;
-        const nodes = [];
-        let isOutdoor = false;
+      if (visited[i][j]) continue;
+      if (map[i][j] === 1) continue;
 
-        while (!queue.isEmpty()) {
-          const [x, y] = queue.front();
-          queue.pop();
-          nodes.push([x, y]);
+      const queue = new Queue();
+      const nodes = [];
+      let isOutdoor = false;
+      queue.push([i, j]);
+      visited[i][j] = true;
 
-          const pivot = (x + 1) % 2 === 0 ? 'even' : 'odd';
-          for (let k = 0; k < 6; k++) {
-            const nx = x + dir[pivot][k][1];
-            const ny = y + dir[pivot][k][0];
+      while (!queue.isEmpty()) {
+        const [x, y] = queue.front();
+        const key = (x + 1) % 2 === 0 ? 'even' : 'odd';
+        queue.pop();
+        nodes.push([x, y]);
 
-            if (nx < 0 || ny < 0 || nx >= H || ny >= W) {
-              isOutdoor = true;
-            } else {
-              if (house[nx][ny] === 0 && !visited[nx][ny]) {
-                visited[nx][ny] = true;
-                queue.push([nx, ny]);
-              }
-            }
+        for (let k = 0; k < 6; k++) {
+          const nx = x + dir[key][k][1];
+          const ny = y + dir[key][k][0];
+
+          if (nx < 0 || ny < 0 || nx >= H || ny >= W) {
+            isOutdoor = true;
+            continue;
           }
+
+          if (map[nx][ny] === 1 || visited[nx][ny]) continue;
+
+          visited[nx][ny] = true;
+          queue.push([nx, ny]);
         }
+      }
 
-        if (isOutdoor) {
-          for (const [x, y] of nodes) {
-            house[x][y] = -1;
-          }
+      if (isOutdoor) {
+        for (const [x, y] of nodes) {
+          map[x][y] = -1;
         }
       }
     }
   }
 }
 
-markOutdoors();
-
-function calcWallLength() {
-  let wallLength = 0;
+function getAnswer() {
   const visited = Array.from({ length: H }, () => Array(W).fill(false));
+  let answer = 0;
 
   for (let i = 0; i < H; i++) {
     for (let j = 0; j < W; j++) {
-      if (house[i][j] === 1 && !visited[i][j]) {
-        const queue = new Queue();
-        queue.push([i, j]);
-        visited[i][j] = true;
+      if (map[i][j] !== 1 || visited[i][j]) continue;
 
-        while (!queue.isEmpty()) {
-          const [x, y] = queue.front();
-          queue.pop();
+      const queue = new Queue();
+      queue.push([i, j]);
+      visited[i][j] = true;
 
-          const pivot = (x + 1) % 2 === 0 ? 'even' : 'odd';
-          for (let k = 0; k < 6; k++) {
-            const nx = x + dir[pivot][k][1];
-            const ny = y + dir[pivot][k][0];
+      while (!queue.isEmpty()) {
+        const [x, y] = queue.front();
+        const key = (x + 1) % 2 === 0 ? 'even' : 'odd';
+        queue.pop();
 
-            if (nx < 0 || ny < 0 || nx >= H || ny >= W) {
-              wallLength += 1;
-            } else {
-              if (house[nx][ny] === 1 && !visited[nx][ny]) {
-                queue.push([nx, ny]);
-                visited[nx][ny] = true;
-              } else if (house[nx][ny] === -1) {
-                wallLength += 1;
-              }
-            }
+        for (let k = 0; k < 6; k++) {
+          const nx = x + dir[key][k][1];
+          const ny = y + dir[key][k][0];
+
+          if (nx < 0 || ny < 0 || nx >= H || ny >= W) {
+            answer += 1;
+            continue;
+          }
+
+          if (map[nx][ny] === -1) {
+            answer += 1;
+            continue;
+          }
+
+          if (map[nx][ny] === 1 && !visited[nx][ny]) {
+            visited[nx][ny] = true;
+            queue.push([nx, ny]);
           }
         }
       }
     }
   }
 
-  console.log(wallLength);
+  console.log(answer);
 }
 
-calcWallLength();
+makeOutdoor();
+getAnswer();
