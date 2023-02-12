@@ -1,6 +1,4 @@
-// https://www.acmicpc.net/problem/2636
-
-// 치즈의 개수를 파악1
+// https://velog.io/@sanbondeveloper/JavaScript-%EB%B0%B1%EC%A4%80-2636
 class Queue {
   constructor() {
     this.dat = [];
@@ -36,39 +34,29 @@ const input = require('fs')
   .trim()
   .split('\n');
 
-let [N, M] = input[0].split(' ').map(Number);
-const map = Array.from({ length: N }, () => Array(M));
+const [N, M] = input[0].split(' ').map(Number);
+const board = Array.from({ length: N }, () => Array(M));
 for (let i = 1; i <= N; i++) {
-  const arr = input[i].split(' ').map(Number);
+  const temp = input[i].split(' ').map(Number);
   for (let j = 0; j < M; j++) {
-    map[i - 1][j] = arr[j];
+    board[i - 1][j] = temp[j];
   }
 }
-const visit = Array.from({ length: N }, () => Array(M).fill(false));
-const help = Array.from({ length: N }, () => Array(M).fill(true));
-let count = 0;
-let answer = 0;
 const dir = [
   [-1, 0],
   [1, 0],
   [0, -1],
   [0, 1],
 ];
+let time = 0;
+let cnt = 0;
 
-for (let i = 0; i < N; i++) {
-  for (let j = 0; j < M; j++) {
-    if (map[i][j] === 1) count++;
-  }
-}
-
-let hour = 0;
-
-while (count > 0) {
-  hour++;
+function bfs() {
   const queue = new Queue();
+  const visited = Array.from({ length: N }, () => Array(M).fill(false));
   queue.push([0, 0]);
-  visit[0][0] = true;
-  help[0][0] = false;
+  visited[0][0] = true;
+  let nodes = [];
 
   while (!queue.isEmpty()) {
     const [x, y] = queue.front();
@@ -79,40 +67,37 @@ while (count > 0) {
       const ny = y + dir[k][1];
 
       if (nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
-      if (visit[nx][ny] || map[nx][ny] !== 0) continue;
-      visit[nx][ny] = true;
-      help[nx][ny] = false;
-      queue.push([nx, ny]);
-    }
-  }
-
-  const arr = [];
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < M; j++) {
-      visit[i][j] = false;
-      if (map[i][j] === 1) {
-        for (let k = 0; k < 4; k++) {
-          const nx = i + dir[k][0];
-          const ny = j + dir[k][1];
-
-          if (nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
-          if (!help[nx][ny]) {
-            arr.push([i, j]);
-            break;
-          }
-        }
+      if (visited[nx][ny]) continue;
+      if (board[nx][ny] === 1) {
+        nodes = [...nodes, [nx, ny]]; // push 메서드 대신
+        visited[nx][ny] = true; // 배열에 중복되는 좌표가 들어가는 것을 방지
+        continue;
       }
+      queue.push([nx, ny]);
+      visited[nx][ny] = true;
     }
   }
 
-  for (const [x, y] of arr) {
-    map[x][y] = 0;
-    help[x][y] = false;
+  for (const [x, y] of nodes) {
+    board[x][y] = 0;
   }
-  const removing = arr.length;
-  if (count - removing === 0) answer = removing;
-  count -= removing;
+
+  if (!nodes.length) return true;
+
+  cnt = nodes.length;
+  return false;
 }
 
-const str = hour + '\n' + answer;
-console.log(str);
+while (true) {
+  if (bfs()) break;
+
+  // 제거되는 치즈가 존재할 경우에만 시간을 증가시킨다.
+  time += 1;
+}
+
+console.log(time, cnt);
+
+// 가장자리(X로 표시된 곳)에는 치즈가 올 수 없기 때문에 bfs의 출발점을 (0, 0)으로 한다.
+// bfs을 통해 공기와 접촉이 되는 치즈의 바깥 부분을 찾아서 0으로 바꾼다.
+// 시간(time)의 경우 제거되는 치즈가 존재할 경우에만 증가시킨다. (제거할 치즈가 없는 경우에는 이미 저번 사이클에 치즈가 모두 제거된 상태)
+// 이전 사이클에 제거한 치즈(cnt) 또한, 제거되는 치즈가 존재할 경우에만 값을 업데이트한다. (마지막 사이클은 항상 0이 되기 때문)

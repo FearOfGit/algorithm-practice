@@ -1,3 +1,5 @@
+// https://velog.io/@sanbondeveloper/%EB%B0%B1%EC%A4%80-16973-%EC%A7%81%EC%82%AC%EA%B0%81%ED%98%95-%ED%83%88%EC%B6%9C-javascript
+
 class Queue {
   constructor() {
     this.dat = [];
