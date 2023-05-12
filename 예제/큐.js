@@ -1,12 +1,12 @@
 class Queue {
   constructor() {
-    this.dat = [];
+    this.data = [];
     this.head = 0;
     this.tail = 0;
   }
 
   push(item) {
-    this.dat[this.tail++] = item;
+    this.data[this.tail++] = item;
   }
 
   pop() {
@@ -14,14 +14,18 @@ class Queue {
   }
 
   front() {
-    return this.dat[this.head];
+    return this.data[this.head];
   }
 
   rear() {
-    return this.dat[this.tail - 1];
+    return this.data[this.tail - 1];
   }
 
   isEmpty() {
     return this.head === this.tail;
+  }
+
+  size() {
+    return Math.abs(this.head - this.tail);
   }
 }
