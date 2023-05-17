@@ -5,28 +5,24 @@ const input = require("fs")
   .trim()
   .split("\n");
 
-const n = +input[0];
-const k = +input[1];
-const visited = Array(n).fill(false);
-const arr = [];
-const answer = new Set();
+const S = input[0].trim();
+const T = input[1].trim();
+let answer = 0;
 
-for (let i = 2; i <= n + 1; i++) arr.push(input[i].trim());
+dfs(T);
 
-dfs("", 0);
-console.log(answer.size);
+console.log(answer);
 
-function dfs(num, cnt) {
-  if (cnt === k) {
-    answer.add(num);
+function dfs(t) {
+  if (S === t) {
+    answer = 1;
+
     return;
   }
 
-  for (let i = 0; i < arr.length; i++) {
-    if (visited[i]) continue;
+  if (t.length === 0) return;
 
-    visited[i] = true;
-    dfs(num + arr[i], cnt + 1);
-    visited[i] = false;
-  }
+  if (t[t.length - 1] === "A") dfs(t.slice(0, t.length - 1));
+
+  if (t[0] === "B") dfs([...t.slice(1)].reverse().join(""));
 }
