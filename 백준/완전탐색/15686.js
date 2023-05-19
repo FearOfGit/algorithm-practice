@@ -10,7 +10,7 @@ const map = Array.from({ length: N }, () => Array(N).fill(null));
 const home = [];
 const store = [];
 const arr = [];
-const visited = Array(13).fill(false);
+const visited = Array(N * N).fill(false);
 let answer = Infinity;
 
 for (let i = 1; i <= N; i++) {
@@ -45,6 +45,7 @@ function dfs(cnt, start) {
     return;
   }
 
+  // 조합 알고리즘
   for (let i = start; i < store.length; i++) {
     if (visited[i]) continue;
 
