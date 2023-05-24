@@ -1,3 +1,35 @@
+class Queue {
+  constructor() {
+    this.data = [];
+    this.head = 0;
+    this.tail = 0;
+  }
+
+  push(item) {
+    this.data[this.tail++] = item;
+  }
+
+  pop() {
+    this.head++;
+  }
+
+  front() {
+    return this.data[this.head];
+  }
+
+  rear() {
+    return this.data[this.tail - 1];
+  }
+
+  isEmpty() {
+    return this.head === this.tail;
+  }
+
+  size() {
+    return Math.abs(this.head - this.tail);
+  }
+}
+
 const filePath = process.platform === "linux" ? "/dev/stdin" : "./input.txt";
 const input = require("fs")
   .readFileSync(filePath)
@@ -5,64 +37,29 @@ const input = require("fs")
   .trim()
   .split("\n");
 
-let T = +input[0];
-let index = 1;
-let answer = "";
+const N = +input[0];
+const arr = Array(N + 1).fill(0);
+let visited;
+const answer = [];
 
-while (T > 0) {
-  const [n, d] = input[index].split(" ").map((el) => +el);
+for (let i = 1; i <= N; i++) arr[i] = +input[i];
 
-  const arr = Array.from({ length: n }, () => Array(n).fill(0));
+for (let i = 1; i <= N; i++) {
+  visited = Array(N + 1).fill(false);
 
-  for (let i = index + 1; i < index + 1 + n; i++) {
-    const temp = input[i].split(" ").map((el) => +el);
-    for (let j = 0; j < n; j++) {
-      arr[i - (index + 1)][j] = temp[j];
-    }
-  }
-
-  const rows = Array.from({ length: 4 }, () => []); // 4가지 행을 저장
-
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < n; j++) {
-      // 중복으로 포함되는 수가 존재
-      if (Math.floor(n / 2) === i) rows[0].push(arr[i][j]);
-      if (i === j) rows[1].push(arr[i][j]);
-      if (Math.floor(n / 2) === j) rows[2].push(arr[i][j]);
-      if (i === n - 1 - j) rows[3].push(arr[i][j]); // (0, 4) (1, 3), (2, 2), (3, 1), (4, 0)
-    }
-  }
-
-  let count = d >= 0 ? d / 45 : (d / 45) * -1;
-
-  while (count--) {
-    if (d < 0) {
-      const first = rows.shift();
-      first.reverse();
-      rows.push(first);
-    } else {
-      const last = rows.pop();
-      last.reverse();
-      rows.unshift(last);
-    }
-  }
-
-  const x = Math.floor(n / 2);
-  for (let i = 0; i < 4; i++) {
-    for (let j = 0; j < rows[i].length; j++) {
-      if (i == 0) arr[x][j] = rows[i][j];
-      else if (i == 1) arr[j][j] = rows[i][j];
-      else if (i == 2) arr[j][x] = rows[i][j];
-      else if (i == 3) arr[j][n - 1 - j] = rows[i][j];
-    }
-  }
-
-  for (let i = 0; i < n; i++) {
-    answer += arr[i].join(" ") + "\n";
-  }
-
-  index += n + 1;
-  T -= 1;
+  if (dfs(i, i)) answer.push(i);
 }
 
-console.log(answer);
+console.log(answer.length + "\n" + answer.join("\n"));
+
+function dfs(start, current) {
+  if (!visited[current]) {
+    visited[current] = true;
+
+    return dfs(start, arr[current]);
+  } else {
+    if (start === current) return true;
+
+    return false;
+  }
+}
