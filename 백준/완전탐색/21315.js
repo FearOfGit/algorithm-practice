@@ -34,7 +34,7 @@ function shuffle(k) {
   let range = N;
   for (let i = 1; i <= k + 1; i++) {
     const count = Math.pow(2, k - i + 1);
-    const newCard = Array(1000);
+    const newCard = Array(N + 1);
     let idx = 0;
 
     /*
@@ -57,3 +57,10 @@ function shuffle(k) {
     range = count; // 변경이 일어난 카드의 개수로 변경
   }
 }
+
+/*
+  - 완전 탐색으로 2개의 k값을 찾는 컨셉 자체는 쉬웠는데 카드를 섞을 때 큐를 사용하지 않고 구현하는 방식이 까다로웠다.
+  - range(카드를 뺄 수 있는 범위), count(빼야되는 개수)를 통해 섞을 범위를 정해준다.
+  - 해당 범위에 속하는 모든 카드를 새로운 카드 배열에 옮겨주고 해당 위치는 0으로 설정한다.
+  - 다시 새로운 카드 배열에 있는 값을 기존 카드 배열로 옮겨준다.
+*/
